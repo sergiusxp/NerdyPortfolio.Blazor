@@ -1,0 +1,35 @@
+﻿@using Blazor.Resume.Models
+
+    <section class="@Class">
+        <div class="ctitle">@((MarkupString)Section.Title) {</div>
+        @if (Section.Subsections == null || Section.Subsections.Count == 0)
+        {
+            <div class="ccontent">
+                <span class="innerText">@((MarkupString)Section.Text)</span>
+            </div>
+        }
+        else
+        {
+            <div>
+                @foreach (Section subSection in Section.Subsections)
+                {
+                    if (subSection.Type == SectionType.comment)
+                    {
+                        <ResumeComment Comments="@subSection.Comments" Class="smaller"></ResumeComment>
+                    }
+                    else
+                    {
+                        <ResumeSection Section="@subSection" Class="smaller"></ResumeSection>
+                    }
+                }
+            </div>
+        }
+        <div class="ctitle">}</div>
+    </section>
+
+@code {
+    [Parameter]
+    public Section Section { get; set; }
+    [Parameter]
+    public string Class { get; set; } = "";
+}

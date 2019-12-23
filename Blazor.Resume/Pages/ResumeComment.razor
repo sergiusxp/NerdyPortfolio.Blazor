@@ -1,0 +1,13 @@
+﻿@using Blazor.Resume.Models
+
+<section class="comments">
+    @foreach (Comment c in Comments)
+    {
+        <span>@((MarkupString)c.Text)</span><br />
+    }
+</section>
+
+@code  {
+    [Parameter]
+    public List<Comment> Comments { get; set; }
+}

@@ -1,0 +1,40 @@
+﻿@inherits LayoutComponentBase
+@using Blazor.Resume.Models
+@using Blazor.Resume.Services
+@inject ResumeService resumeService
+
+<header>
+    @if  (resume != null)
+    {
+        foreach (var link in resume.Links)
+        {
+            <div class="menu-button link">
+                @if (link.IsInternal)
+                {
+                    <NavLink href="@link.Url">
+                        <span>@link.Label</span>
+                    </NavLink>
+                }
+                else
+                {
+                    <a href="@link.Url"><span>@link.Label</span></a>
+                }
+            </div>
+        }
+    }
+</header>
+<div class="container">
+    @Body
+</div>
+<footer>
+    <div class="closing">Made with ❤ in Italy by <a href="https://linkedin.com/in/sergiusxp" target="_blank">Sergio Meloni</a></div>
+</footer>
+
+@code {
+    private Resume resume;
+
+    protected override void OnInitialized()
+    {
+        resume = resumeService.GetResume();
+    }
+}

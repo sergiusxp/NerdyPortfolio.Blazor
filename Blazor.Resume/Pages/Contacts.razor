@@ -1,0 +1,123 @@
+﻿@inherits LayoutComponentBase
+@using Blazor.Resume.Models
+@using SendGrid;
+@using SendGrid.Helpers.Mail;
+@using Blazor.Resume.Services
+@inject ResumeService resumeService
+@page "/contacts"
+
+<br />
+<br /><center><h1>Contacts</h1></center>
+@if (resume.Settings.DynamicContact)
+{
+    <br />
+    <br /><p>You can contact me by compiling this form or writing <a href="mailto:sergio.meloni@outlook.com">an e-mail message</a>. I'll reply to you asap, I promise ;-)</p>
+    <EditForm Model="@contactModel" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="contacts">
+            <ul>
+                <li class="form-element">
+                    <label for="Name">Name *</label>
+                    <InputText id="Name" class="myi" @bind-Value="contactModel.Name" />
+                    <span>Your name</span>
+                </li>
+                <li class="form-element">
+                    <label for="Surname">Surname *</label>
+                    <InputText id="Surname" class="myi" @bind-Value="contactModel.Surname" />
+                    <span>Your surname</span>
+                </li>
+                <li class="form-element">
+                    <label for="Surname">E-mail *</label>
+                    <InputText id="Email" class="myi" @bind-Value="contactModel.Email" />
+                    <span>E-mail</span>
+                </li>
+                <li class="form-element">
+                    <label for="Surname">Category *</label>
+                    <InputSelect id="Category" class="myi" @bind-Value="contactModel.Category">
+                        <option value="General">General</option>
+                        <option value="Work">Work</option>
+                        <option value="Feedback">Feedback</option>
+                    </InputSelect>
+                    <span>Category</span>
+                </li>
+                <li class="form-element">
+                    <label for="Surname">Subject *</label>
+                    <InputText id="Subject" class="myi" @bind-Value="contactModel.Subject" />
+                    <span>Subject</span>
+                </li>
+                <li class="form-element">
+                    <label for="Surname">Text *</label>
+                    <InputTextArea id="Text" class="myi" @bind-Value="contactModel.Text" />
+                    <span>Text</span>
+                </li>
+                <li class="nob">
+                    <button type="submit">
+                        Send this request!@if (loading)
+                        {<img src="assets/spinner.gif" height="38" width="38" />}
+                    </button>
+                </li>
+            </ul>
+        </div>
+        @if (request != null)
+        {
+            <center>
+                @if (request == true)
+                {
+                    <h3>Request successfully sent :-)</h3>
+                }
+                else
+                {
+                    <h3>There's a problem with you request :-( Please try again in 10 minutes...</h3>
+                }
+            </center>
+        }
+    </EditForm>
+}
+else
+{
+    <h3>Contact Page</h3>
+    <p>Hi, thanks for your interest. If you want to contact me, please feel free to <a href="mailto:@resume.Settings.MailAddressForStaticContactPage">send me an e-mail :-)</a></p>
+}
+
+@code {
+    private Resume resume;
+    public bool? request;
+    public bool loading;
+    private ContactModel contactModel = new ContactModel();
+
+    private async void HandleValidSubmit()
+    {
+        if (!loading)
+        {
+            loading = true;
+
+            try
+            {
+                var client = new SendGridClient("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");
+                var from = new EmailAddress("no-reply@azurehead.com", "AzureHead.com");
+                var to = new EmailAddress(resume.Settings.MailAddressForStaticContactPage);
+                var text = string.Format("<p><em>Hi, this is a new request from AzureHead.com!</em></p><br>Name and Surname: <b>{0}</b><br>Category: <b>{1}</b><br>Subject: <b>{2}</b><br>Email: <b>{3}</b><br>Request: <b>{4}</b>", contactModel.Name, contactModel.Category, contactModel.Subject, contactModel.Email, contactModel.Text);
+                var msg = MailHelper.CreateSingleEmail(from, to, string.Format("New request from AzureHed.com - {0}", contactModel.Subject), text, text);
+                var r = await client.SendEmailAsync(msg);
+            }
+            catch (Exception)
+            {
+                request = false;
+                loading = false;
+            }
+
+            request = true;
+            loading = false;
+            base.StateHasChanged();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        resume = resumeService.GetResume();
+        loading = false;
+        request = null;
+    }
+}

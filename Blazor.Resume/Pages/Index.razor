@@ -1,0 +1,30 @@
+﻿@inherits LayoutComponentBase
+@using Blazor.Resume.Models
+@using Blazor.Resume.Services
+@inject ResumeService resumeService
+@page "/"
+
+    <div class="content">
+        <div class="title"><span class="modifier">public class</span> @resume.Settings.Author {</div>
+        @foreach (var s in resume.Sections)
+        {
+            if (s.Type == SectionType.comment)
+            {
+                <ResumeComment Comments="@s.Comments"></ResumeComment>
+            }
+            else if (s.Type == SectionType.section)
+            {
+                <ResumeSection Section="@s"></ResumeSection>
+            }
+        }
+        <div class="title">}</div>
+    </div>
+
+@code {
+    private Resume resume;
+
+    protected override void OnInitialized()
+    {
+        resume = resumeService.GetResume();
+    }
+}
